@@ -48,9 +48,9 @@ namespace MISA.Import.Controllers
                             worksheet.Cells[row, 5].Value.ToString(),
                             worksheet.Cells[row, 7].Value.ToString(),
                             worksheet.Cells[row, 8].Value.ToString(),
-                            worksheet.Cells[row, 9].Value == null? "" : worksheet.Cells[row, 9].Value.ToString()/*,
-                            worksheet.Cells[row, 10].Value.ToString(),
-                            worksheet.Cells[row, 11].Value.ToString()*/);
+                            worksheet.Cells[row, 9].Value == null? "" : worksheet.Cells[row, 9].Value.ToString(),
+                            worksheet.Cells[row, 10].Value == null ? "" : worksheet.Cells[row, 10].Value.ToString(),
+                            worksheet.Cells[row, 11].Value == null ? "" : worksheet.Cells[row, 11].Value.ToString());
                         customers.Add(c);
                     }
                 }
