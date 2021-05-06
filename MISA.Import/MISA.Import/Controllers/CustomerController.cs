@@ -47,7 +47,50 @@ namespace MISA.Import.Controllers
 
             Validate(customers);
 
-            return Ok(customers);
+            AddToDatabase(customers);
+
+            var result = new
+            {
+                numberOfValidation = CountNumberValidation(customers),
+                numberOfInvalidate = customers.Count - CountNumberValidation(customers),
+                data = customers
+            };
+
+            return Ok(result);
+        }
+
+        private int CountNumberValidation(List<Customer> customers)
+        {
+            int result = 0;
+            for(int i = 0; i < customers.Count; i++)
+            {
+                if(customers[i].Status == null)
+                {
+                    result++;
+                }
+            }
+            return result;
+        }
+
+        private void AddToDatabase(List<Customer> customers)
+        {
+            foreach(Customer customer in customers)
+            {
+                if(customer.Status == null)
+                {
+                    InsertCustomerToDatabase(customer);
+                }
+            }
+        }
+
+        private void InsertCustomerToDatabase(Customer customer)
+        {
+            string sqlCommand = "Proc_InsertCustomer";
+
+            using(dbConnection = new MySqlConnection(connectionString))
+            {
+                dbConnection.Execute(sqlCommand, param: customer, commandType: CommandType.StoredProcedure);
+            }
         }
 
         private void Validate(List<Customer> customers)
@@ -68,7 +111,7 @@ namespace MISA.Import.Controllers
                     {
                         if(customers[i].CustomerCode == customers[j].CustomerCode)
                         {
-                            customers[i].Status += "Mã khách hàng trùng lặp trên file";
+                            customers[i].Status += "Mã khách hàng trùng lặp trên file\n";
                             break;
                         }
                     }
@@ -84,7 +127,7 @@ namespace MISA.Import.Controllers
                     {
                         if (customers[i].PhoneNumber == customers[j].PhoneNumber)
                         {
-                            customers[i].Status += "Số điện thoại trùng lặp trên file";
+                            customers[i].Status += "Số điện thoại trùng lặp trên file\n";
                             break;
                         }
                     }
@@ -100,7 +143,7 @@ namespace MISA.Import.Controllers
                     {
                         if (customers[i].Email == customers[j].Email)
                         {
-                            customers[i].Status += "Email trùng lặp trên file";
+                            customers[i].Status += "Email trùng lặp trên file\n";
                             break;
                         }
                     }
@@ -182,6 +225,7 @@ namespace MISA.Import.Controllers
 
                     for (int row = 3; row < worksheet.Dimension.Rows; row++)
                     {
+                        string dobString = worksheet.Cells[row, 6].Value == null ? null : worksheet.Cells[row, 6].Value.ToString();
                         Customer c = new Customer(
                             new Guid(),
                             worksheet.Cells[row, 2].Value == null ? null : worksheet.Cells[row, 2].Value.ToString(),
@@ -194,13 +238,38 @@ namespace MISA.Import.Controllers
                             worksheet.Cells[row, 9].Value == null ? null : worksheet.Cells[row, 9].Value.ToString(),
                             worksheet.Cells[row, 10].Value == null ? null : worksheet.Cells[row, 10].Value.ToString(),
                             worksheet.Cells[row, 11].Value == null ? null : worksheet.Cells[row, 11].Value.ToString(),
-                            worksheet.Cells[row, 4].Value == null ? null : worksheet.Cells[row, 4].Value.ToString());
+                            worksheet.Cells[row, 4].Value == null ? null : worksheet.Cells[row, 4].Value.ToString(),
+                            TryParseDate(dobString));
                         customers.Add(c);
                     }
                 }
             }
 
             return customers;
+        }
+
+        DateTime? TryParseDate(string dob)
+        {
+            try
+            {
+                var elements = dob.Split("/");
+                if (elements.Length == 1)
+                {
+                    return new DateTime(int.Parse(elements[0]), 1, 1);
+                }
+                else if (elements.Length == 2)
+                {
+                    return new DateTime(int.Parse(elements[1]), int.Parse(elements[0]), 1);
+                }
+                else
+                {
+                    return new DateTime(int.Parse(elements[2]), int.Parse(elements[1]), int.Parse(elements[0]));
+                }
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

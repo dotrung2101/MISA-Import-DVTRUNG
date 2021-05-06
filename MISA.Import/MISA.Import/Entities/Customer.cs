@@ -8,7 +8,7 @@ namespace MISA.Import.Entities
     public class Customer
     {
         public Customer(Guid id, string fullName, string customerCode, string memberCardCode, Guid? customerGroupId,
-            string phoneNumber, string companyName, string taxCode, string email, string address, string note, string groupName)
+            string phoneNumber, string companyName, string taxCode, string email, string address, string note, string groupName, DateTime? dob)
         {
             CustomerId = id;
             FullName = fullName;
@@ -22,6 +22,7 @@ namespace MISA.Import.Entities
             Address = address;
             Note = note;
             CustomerGroupName = groupName;
+            DateOfBirth = dob;
         }
         public Guid CustomerId { get; set; }
         public string FullName { get; set; }
